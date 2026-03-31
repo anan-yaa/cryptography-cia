@@ -1,10 +1,38 @@
-import hashlib
-import math
+'''name : R Ananyaa Sri
+CSE IoT-B
+Roll no. 23110244
+Reg no. 23011102069
 
-# ✅ Classical Myszkowski key (CORRECT)
+implementing the Myszkowski cipher using a custom hash function'''
+
+
+import math
+''' 
+custom hash function
+
+my hash function initializes a value as 0, takes the letters in the text and converts it into
+ascii values (using ord function), it adds position based weighting (where order matters). 
+then modulo by 1,00,000 is done to limit the size of the number.
+then comes bit-mixing, which is left shift by 3 then xor. finally it takes only the last
+32 bits of the number.
+''' 
+def simple_hash(text):
+    hash_val = 0
+
+    for i, ch in enumerate(text):
+        hash_val = (hash_val + (ord(ch) * (i + 1))) % 100000
+        hash_val = (hash_val ^ (hash_val << 3)) & 0xFFFFFFFF
+
+    return hex(hash_val)[2:].upper()
+
+''' 
+myszkowski key is decided by the order and frequency of the letters.
+if the passphrase is given as "mammal" then its first arranged in ascending order of the 
+letters, which is aalmmm. then numbers are assigned like 112333. same letters have the same
+number assigned to them. then the original order is preserved, so the key becomes 313312
+'''
 def get_myszkowski_key(passphrase):
     passphrase = passphrase.lower()
-
     sorted_chars = sorted(passphrase)
 
     rank_map = {}
@@ -17,23 +45,21 @@ def get_myszkowski_key(passphrase):
 
     return [rank_map[ch] for ch in passphrase]
 
-
-# ✅ SHA-256 on plaintext
-def sha256_hash(text):
-    return hashlib.sha256(text.encode()).hexdigest().upper()
-
-
-def myszkowski_encrypt(text, key):
+def clean_text(text):
+    return text.replace(" ", "").upper()
+''' using x as a padding character. '''
+def myszkowski_encrypt(plaintext, key):
+    plaintext = clean_text(plaintext)
     num_cols = len(key)
-    num_rows = math.ceil(len(text) / num_cols)
+    num_rows = math.ceil(len(plaintext) / num_cols)
 
     grid = [['' for _ in range(num_cols)] for _ in range(num_rows)]
 
     idx = 0
     for r in range(num_rows):
         for c in range(num_cols):
-            if idx < len(text):
-                grid[r][c] = text[idx]
+            if idx < len(plaintext):
+                grid[r][c] = plaintext[idx]
                 idx += 1
             else:
                 grid[r][c] = 'X'
@@ -49,20 +75,15 @@ def myszkowski_encrypt(text, key):
 
     return ciphertext
 
-
-# 🔥 MAIN
 if __name__ == "__main__":
     plaintext = input("Enter plaintext: ")
     passphrase = input("Enter passphrase: ")
 
-    # Step 1: SHA-256
-    hashed_text = sha256_hash(plaintext)
-    print("\nSHA-256 Hash:\n", hashed_text)
-
-    # Step 2: Myszkowski key
     key = get_myszkowski_key(passphrase)
-    print("\nGenerated Key:", key)
+    print("\nKey from myszkowski cipher:", key)
 
-    # Step 3: Encrypt hash
-    cipher = myszkowski_encrypt(hashed_text, key)
-    print("\nFinal Cipher Text:\n", cipher)
+    ciphertext = myszkowski_encrypt(plaintext, key)
+    print("\nCipher Text:\n", ciphertext)
+
+    hashed_cipher = simple_hash(ciphertext)
+    print("\nHashed cipher text:\n", hashed_cipher)
