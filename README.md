@@ -1,48 +1,30 @@
-# Cryptography Concepts CIA: Myszkowski Transposition Cipher 
-
-Name: R. Ananyaa Sri
-Reg No. 23011102069
-Class : CSE IoT-B
-
-Python implementation of the Myszkowski Transposition Cipher with a Custom 32-bit Bit-Mixed Hash Function. 
----
-
-## Features
-
-* **Myszkowski Cipher**: A variation of the columnar transposition cipher that handles keyword repetitions by processing columns of the same rank together.
-* **Custom Hash Function**: A proprietary hashing algorithm utilizing positional weighting, modulo arithmetic, and XOR bit-mixing.
-* **32-bit Simulation**: Uses bit-masking (`& 0xFFFFFFFF`) to ensure consistent 32-bit output, simulating hardware register behavior within Python's arbitrary-precision environment.
-
-
+# CIA: Cryptography Concepts - Myszkowski Transposition Cipher
+**Name:** R. Ananyaa Sri  
+**Reg No:** 23011102069  
+**Class:** CSE IoT-B  
 
 ---
 
-## Logic Overview
+## 1. Algorithm Design
 
-### 1. Key Generation (Myszkowski)
-The key is derived from the alphabetical order of the passphrase. Unlike standard columnar transposition where identical letters are numbered sequentially, Myszkowski assigns the **same rank** to identical letters.
-* **Example**: `MAMMAL` $\rightarrow$ `3 1 3 3 1 2`
-* This ensures that columns with the same rank are read row-by-row, increasing the complexity of the resulting ciphertext.
+### 1. Myszkowski Key Generation
+The core difference between a standard columnar cipher and the Myszkowski variant lies in how keyword repetitions are handled. 
+* Identical characters in the passphrase are assigned the **same rank**.
+* **Example:** In the passphrase `MAMMAL`, the letters are ranked as `3 1 3 3 1 2`. 
+* Columns sharing the same rank are read row-by-row during the transposition phase, whereas unique ranks are read column-by-column.
 
-### 2. Encryption Process
-1.  **Cleaning**: Plaintext is stripped of spaces and converted to uppercase.
-2.  **Grid Mapping**: Text is written horizontally across a grid dictated by the key length.
-3.  **Transposition**: Columns are read based on the alphabetical rank of the key. 
-    * If a rank is unique, the entire column is read. 
-    * If ranks are shared (e.g., two 'A's in the key), those columns are read together, row by row.
-4.  **Padding**: The character 'X' is used to fill any remaining slots in the grid.
+### 2. Encryption and Padding
+1. **Preprocessing:** The plaintext is sanitized by removing whitespace and converting all characters to uppercase.
+2. **Matrix Mapping:** The text is mapped into a grid where the number of columns corresponds to the passphrase length. 
+3. **Padding:** If the message length is not a multiple of the key length, 'X' characters are used as null-fills to complete the final row.
+4. **Transposition:** The grid is read out based on the ascending order of the generated ranks.
 
-### 3. Integrity Hashing
-The `simple_hash` function provides a digital fingerprint of the ciphertext using a two-step process:
-1.  **Positional Accumulation**: $Hash_{val} = ((Hash_{val} + (ASCII \times Position)) \pmod{100,000})$
-2.  **Bit-Mixing**: $Hash_{val} = (Hash_{val} \oplus (Hash_{val} \ll 3)) \ \& \ 0xFFFFFFFF$
+### 3. The Hashing Function (`simple_hash`)
+The hashing algorithm follows a two-stage transformation to ensure a high avalanche effect:
+hash_val = (hash_val + (ord(ch) * (i + 1))) % 100000
+hash_val = (hash_val ^ (hash_val << 3)) & 0xFFFFFFFF
 
 ---
-## Prompt used
 
-Write a Python script that implements a Myszkowski transposition cipher and a custom hash function for a cryptography project. For the cipher, the code should take a passphrase and assign numeric ranks to each letter based on alphabetical order, ensuring that duplicate letters receive the identical rank. The encryption process must clean the input text by removing spaces and converting it to uppercase, then arrange it into a grid where the number of columns matches the passphrase length, using 'X' for any necessary padding. When reading the ciphertext, the logic should follow the numeric ranks of the key, where columns with the same rank are processed together row-by-row. Additionally, include a hash function that starts at zero and iterates through the ciphertext, adding the ASCII value of each character multiplied by its 1-indexed position. This value should be moduloed by 100,000, then mixed using a bitwise left-shift of 3 XORed with itself, finally masking the result to 32 bits and returning it as an uppercase hexadecimal string. The script should include a main block to take user input and display the resulting key, ciphertext, and hash.
-
-## Security Analysis
-* **Diffusion**: Achieved by the positional weighting in the hash and the columnar shifting in the cipher.
-* **Confusion**: The Myszkowski rank system masks the relationship between the key and the ciphertext more effectively than simple columnar transposition.
-* **Integrity**: The bit-mixing step ensures that even minor changes to the ciphertext result in a significantly different hash value.
+## 4. LLM Prompt
+> Write a Python code that implements a Myszkowski transposition cipher and a custom hash function. The cipher must assign identical ranks to duplicate letters in the passphrase. Encryption involves horizontal grid filling with 'X' padding and rank-ordered reading (shared ranks read row-by-row). The hash function must use 1-indexed positional weighting, a 100,000 modulo, and a 3-bit left-shift XOR mix, returning a 32-bit uppercase hex string.
