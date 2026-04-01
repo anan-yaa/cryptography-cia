@@ -1,5 +1,8 @@
 
 # Crptography CIA : Implementing Myszkowski Cipher
+- Name: R. Ananyaa Sri 
+- Class: CSE IoT-B
+- Reg No. : 23011102069
 
 ## 1. Brief Theory
 
@@ -32,7 +35,7 @@ Since the project requires an implementation from scratch without external libra
    ```bash
    python main.py
    ```
-
+4. Enter the plain text and the key.
 ---
 
 ## 3. Worked Examples
