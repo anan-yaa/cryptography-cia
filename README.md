@@ -1,30 +1,68 @@
-# CIA: Cryptography Concepts - Myszkowski Transposition Cipher
-**Name:** R. Ananyaa Sri  
-**Reg No:** 23011102069  
-**Class:** CSE IoT-B  
+
+# Crptography CIA : Implementing Myszkowski Cipher
+
+## 1. Brief Theory
+
+### History of the Cipher: Myszkowski Transposition
+The **Myszkowski Cipher** is a variation of the Columnar Transposition cipher. In a standard columnar transposition, duplicate letters in a keyword are numbered sequentially. However, in Myszkowski, duplicate letters are given the same rank. 
+
+When the algorithm encounters these duplicate ranks:
+- **Standard Rule:** Read down the columns one by one.
+- **Myszkowski Rule:** Read **across** the duplicate columns row-by-row.
+This provides a unique scrambling method that is more complex to crack manually than standard transposition.
+
+### The Hash: 32-bit Custom Positional Mixer
+Since the project requires an implementation from scratch without external libraries, I implemented a **Custom 32-bit Mixer Hash**. 
+- **Positional Weighting:** Each character is multiplied by its index to ensure that "ABC" and "CBA" produce different results.
+- **Bitwise Diffusion:** It uses bit-shifting (`<<`) and XOR operations to ensure the "Avalanche Effect"—meaning a small change in input produces a large, unpredictable change in the output.
+- **Collision Resistance:** A 32-bit modulo ensures over 4 billion possible hash values, making accidental collisions highly unlikely.
 
 ---
 
-## 1. Algorithm Design
+## 2. Instructions to Run the Code
 
-### 1. Myszkowski Key Generation
-The core difference between a standard columnar cipher and the Myszkowski variant lies in how keyword repetitions are handled. 
-* Identical characters in the passphrase are assigned the **same rank**.
-* **Example:** In the passphrase `MAMMAL`, the letters are ranked as `3 1 3 3 1 2`. 
-* Columns sharing the same rank are read row-by-row during the transposition phase, whereas unique ranks are read column-by-column.
+### Prerequisites
+- Python 3.x installed.
+- No external libraries are required (standard `math` library only).
 
-### 2. Encryption and Padding
-1. **Preprocessing:** The plaintext is sanitized by removing whitespace and converting all characters to uppercase.
-2. **Matrix Mapping:** The text is mapped into a grid where the number of columns corresponds to the passphrase length. 
-3. **Padding:** If the message length is not a multiple of the key length, 'X' characters are used as null-fills to complete the final row.
-4. **Transposition:** The grid is read out based on the ascending order of the generated ranks.
-
-### 3. The Hashing Function (`simple_hash`)
-The hashing algorithm follows a two-stage transformation to ensure a high avalanche effect:
-hash_val = (hash_val + (ord(ch) * (i + 1))) % 100000
-hash_val = (hash_val ^ (hash_val << 3)) & 0xFFFFFFFF
+### Execution
+1. Clone this repository to your local machine.
+2. Navigate to the directory on your local machine.
+3. Run the script using the following command:
+   ```bash
+   python main.py
+   ```
 
 ---
 
-## 4. LLM Prompt
-> Write a Python code that implements a Myszkowski transposition cipher and a custom hash function. The cipher must assign identical ranks to duplicate letters in the passphrase. Encryption involves horizontal grid filling with 'X' padding and rank-ordered reading (shared ranks read row-by-row). The hash function must use 1-indexed positional weighting, a 100,000 modulo, and a 3-bit left-shift XOR mix, returning a 32-bit uppercase hex string.
+## 3. Worked Examples
+
+### Example 1
+- **Plaintext:** `HELLO WORLD`
+- **Key:** `BANANA`
+- **Ciphertext:** `ELWRDXHOLOLX`
+- **Hash Output:** `EBF9AFA1` 
+
+### Example 2
+- **Plaintext:** `CRYPTOGRAPHY`
+- **Key:** `CONCEPTS`
+- **Ciphertext:** `CPAYTXYHRPOXRXGX`
+- **Hash Output:** `6706B3B9`
+
+---
+
+## 4. Test Script Results (Encrypt → Hash → Decrypt)
+
+The script includes a built-in test suite that demonstrates the full round-trip. When executed, it performs the following steps:
+1. **Normalization:** Removes spaces and pads the plaintext with 'X' to fit the grid.
+2. **Encryption:** Transforms the plaintext into ciphertext using the Myszkowski key-ranking rule.
+3. **Hashing:** Generates a unique 32-bit fingerprint of the resulting ciphertext.
+4. **Decryption:** Reverses the transposition and strips the padding to recover the original message.
+
+---
+
+## 5. Implementation Constraints Checklist
+- [x] **Language:** Python
+- [x] **No Crypto Libraries:** All logic (including hashing) implemented from scratch.
+- [x] **Unique Hash:** Custom implementation different from standard MD5/SHA libraries.
+- [x] **GitHub Ready:** Structured for immediate push.
